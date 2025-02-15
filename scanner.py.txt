@@ -1,0 +1,36 @@
+import pandas as pd
+from nsepy import get_history
+from datetime import date, timedelta
+import requests
+import talib
+
+def get_fno_list():
+    url = "https://www.nseindia.com/api/equity-stockIndices?index=SECURITIES%20IN%20F%26O"
+    return [item['symbol'] for item in requests.get(url).json()['data']]
+
+def main():
+    results = []
+    for symbol in get_fno_list()[:50]:  # Test with first 50 stocks
+        try:
+            data = get_history(symbol, date.today()-timedelta(days=5), date.today())
+            if data.empty: continue
+            
+            # Detect patterns
+            data['bullish_harami'] = talib.CDLHARAMI(data.Open, data.High, data.Low, data.Close)
+            data['evening_star'] = talib.CDLEVENINGSTAR(data.Open, data.High, data.Low, data.Close)
+            
+            last_row = data.iloc[-1]
+            if last_row.Volume > 50000 and (last_row.bullish_harami > 0 or last_row.evening_star > 0):
+                results.append({
+                    'Stock': symbol,
+                    'Pattern': 'Bullish Harami' if last_row.bullish_harami else 'Evening Star',
+                    'Volume': int(last_row.Volume),
+                    'Price': round(last_row.Close, 2)
+                })
+        except:
+            pass
+    
+    pd.DataFrame(results).to_json('results.json', orient='records')
+
+if __name__ == "__main__":
+    main()
