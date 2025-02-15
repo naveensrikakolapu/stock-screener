@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>F&O Pattern Scanner</title>
+    <style>
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        tr:hover { background-color: #f5f5f5; }
+    </style>
+</head>
+<body>
+    <h1>Daily Stock Patterns (F&O)</h1>
+    <div id="results"></div>
+
+    <script>
+        fetch('https://raw.githubusercontent.com/<your-username>/stock-screener/main/results.json')
+            .then(response => response.json())
+            .then(data => {
+                let html = '<table><tr><th>Stock</th><th>Pattern</th><th>Volume</th><th>Price</th></tr>';
+                data.forEach(stock => {
+                    html += `<tr>
+                        <td>${stock.Stock}</td>
+                        <td>${stock.Pattern}</td>
+                        <td>${stock.Volume.toLocaleString()}</td>
+                        <td>₹${stock.Price}</td>
+                    </tr>`;
+                });
+                document.getElementById('results').innerHTML = html + '</table>';
+            });
+    </script>
+    
+    <footer style="margin-top:50px;color:#666">
+        <small>Data from NSE India | Updated daily at 4 PM | Educational purpose only</small>
+    </footer>
+</body>
+</html>
